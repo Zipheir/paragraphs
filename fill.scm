@@ -35,8 +35,15 @@ END
   (words-rev line-words-rev)
   (width line-width))
 
-(define (initial-node t)
-  (list '() t))
+(define-record-type node
+  (make-node lines demerits rest)
+  node?
+  (lines    node-lines)    ; list of line structures
+  (demerits node-demerits) ; total demerits of incomplete solution
+  (rest     node-rest))    ; list of remaining words
+
+(define (initial-node words)
+  (make-node '() 0 words))
 
 (define (demerits width)
   (let ((k (+ 1 (badness width))))
@@ -45,9 +52,8 @@ END
 (define (badness k)
   (abs (- k goal-width)))
 
-(define (splits-from node)
-  (pmatch node
-    ((? ,ws) (splits ws))))
+(define (splits-from nd)
+  (splits (node-rest nd)))
 
 ;; Similar to a zipper on string lists, with the total width of the
 ;; "top" segment stored instead of a focus.
@@ -77,25 +83,26 @@ END
   (+ (split-top-width spl)  ; total width of words in top
      (max 0 (- (length (split-top spl)) 1)))) ; inter-word spaces
 
-(define (extend threshold node)
-  (pmatch node
-    ((,lines ?)
-     (let ((candidates (splits-from node)))
-       (map (lambda (spl)
-              (list (cons (split-top spl) lines)
-                    (split-bottom spl)))
-            (filter (lambda (spl)
-                      (cond ((null? (split-bottom spl)))
-                            ((null? (split-top spl)) #f)
-                            (else
-                             (good-enough? threshold
-                                           (top-full-width spl)))))
-                    candidates))))))
+(define (extend threshold nd)
+  (let ((lines (node-lines nd))
+        (demr (node-demerits nd))
+        (candidates (splits-from nd)))
+    (map (lambda (spl)
+           (make-node (cons (split-top spl) lines)
+                      (+ demr (demerits (top-full-width spl)))
+                      (split-bottom spl)))
+         (filter (lambda (spl)
+                   (cond ((null? (split-bottom spl)))
+                         ((null? (split-top spl)) #f)
+                         (else
+                          (good-enough? threshold
+                                        (top-full-width spl)))))
+                 candidates))))
 
 (define (good-enough? threshold width)
   (< (demerits width) threshold))
 
-(define (node-active? node) (pair? (cadr node)))
+(define (node-active? nd) (pair? (node-rest nd)))
 
 (define (prune act)
   (let-values (((act* inact) (partition node-active? act)))
@@ -113,8 +120,8 @@ END
                       ((as* ins*) (prune ns)))
           (loop as* (append ins* inactive) (- k 1))))))
 
-;(define (optimum-fit fills)
-;  (minimum-by total-demerits fills))
+(define (optimum-fit fills)
+  (minimum-by node-demerits fills))
 
 (define (rejoin lines)
   (string-join (map (cut string-join-reverse <> " ")
