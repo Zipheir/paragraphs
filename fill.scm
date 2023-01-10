@@ -3,8 +3,6 @@
         (srfi 152)
         )
 
-(include "pmatch.scm")
-
 (define goal-width 25)
 
 ;;; Utility
@@ -132,10 +130,3 @@ END
 (define (string-join-reverse ss delim)
   (string-concatenate-reverse
    (intersperse ss delim)))
-
-;(define (intersperse xs obj)
-;  (pmatch xs
-;    (() '())
-;    ((,x) xs)
-;    ((,x . ,xs*)
-;     (cons x (cons obj (intersperse xs* obj))))))
