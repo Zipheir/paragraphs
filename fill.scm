@@ -83,19 +83,23 @@ END
 
 (define (extend threshold nd)
   (let ((lines (node-lines nd))
-        (demr (node-demerits nd))
-        (candidates (splits-from nd)))
-    (map (lambda (spl)
-           (make-node (cons (split-top spl) lines)
-                      (+ demr (demerits (top-full-width spl)))
-                      (split-bottom spl)))
-         (filter (lambda (spl)
-                   (cond ((null? (split-bottom spl)))
-                         ((null? (split-top spl)) #f)
-                         (else
-                          (good-enough? threshold
-                                        (top-full-width spl)))))
-                 candidates))))
+        (demr (node-demerits nd)))
+    (let* ((build-node
+            (lambda (d spl)
+              (make-node (cons (split-top spl) lines)
+                         (+ demr d)
+                         (split-bottom spl))))
+           (accum
+            (lambda (spl nodes)
+              (if (null? (split-top spl))
+                  nodes  ; ignore empty lines
+                  (let ((d (demerits (top-full-width spl))))
+                    (if (or (null? (split-bottom spl))
+                            (< d threshold))
+                        (cons (build-node d spl) nodes)
+                        nodes))))))
+
+      (fold-right accum '() (splits-from nd)))))
 
 (define (good-enough? threshold width)
   (< (demerits width) threshold))
