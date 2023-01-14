@@ -1,5 +1,6 @@
 (import (chicken string)
         (srfi 1)
+        (srfi 41)
         (srfi 152)
         )
 
@@ -62,16 +63,19 @@ END
   (top-width split-top-width)
   (bottom    split-bottom))
 
-;; (list string) -> (list split)
+;; (list string) -> (stream split)
 (define (splits ss)
-  (define (build top-w top bot)
-    (let ((sp (make-split top top-w bot)))
-      (if (null? bot)
-          (list sp)
-          (let* ((s (car bot))
-                 (dw (string-length s)))
-            (cons sp
-                  (build (+ top-w dw) (cons s top) (cdr bot)))))))
+  (define build
+    (stream-lambda (top-w top bot)
+      (let ((sp (make-split top top-w bot)))
+        (if (null? bot)
+            (stream sp)
+            (let* ((s (car bot))
+                   (dw (string-length s)))
+              (stream-cons sp
+                           (build (+ top-w dw)
+                                  (cons s top)
+                                  (cdr bot))))))))
 
   (build 0 '() ss))
 
@@ -84,22 +88,27 @@ END
 (define (extend threshold nd)
   (let ((lines (node-lines nd))
         (demr (node-demerits nd)))
-    (let* ((build-node
-            (lambda (d spl)
-              (make-node (cons (split-top spl) lines)
-                         (+ demr d)
-                         (split-bottom spl))))
-           (accum
-            (lambda (spl nodes)
+    (letrec*
+     ((build-node
+       (lambda (d spl)
+         (make-node (cons (split-top spl) lines)
+                    (+ demr d)
+                    (split-bottom spl))))
+      (exts-stream
+       (stream-lambda (spls)
+         (stream-match spls
+           (() stream-null)
+           ((spl . rest)
+            (let ((exts (exts-stream rest))) ; recur
               (if (null? (split-top spl))
-                  nodes  ; ignore empty lines
+                  exts  ; ignore empty lines
                   (let ((d (demerits (top-full-width spl))))
                     (if (or (null? (split-bottom spl))
                             (< d threshold))
-                        (cons (build-node d spl) nodes)
-                        nodes))))))
+                        (stream-cons (build-node d spl) exts)
+                        exts)))))))))
 
-      (fold-right accum '() (splits-from nd)))))
+      (exts-stream (splits-from nd)))))
 
 (define (good-enough? threshold width)
   (< (demerits width) threshold))
