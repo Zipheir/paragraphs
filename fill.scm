@@ -4,6 +4,7 @@
         (srfi 1)
         (srfi 41)
         (srfi 152)
+        (prefix (only utf8 string-length) utf8:)
         )
 
 (define goal-width 25)
@@ -85,7 +86,7 @@ END
         (if (null? bot)
             (stream sp)
             (let* ((s (car bot))
-                   (dw (string-length s)))
+                   (dw (utf8:string-length s)))
               (stream-cons sp
                            (build (+ top-w dw)
                                   (cons s top)
