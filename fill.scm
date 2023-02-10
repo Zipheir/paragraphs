@@ -1,6 +1,8 @@
 (module fill (node-lines solutions-bounded optimum-fit)
 
-(import (chicken string)
+(import scheme
+        (chicken base)
+        (chicken string)
         (srfi 1)
         (srfi 41)
         (srfi 152)
