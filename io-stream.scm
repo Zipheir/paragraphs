@@ -1,8 +1,10 @@
-(module io-stream (line-stream paragraphs)
+(module io-stream (port->paragraph-stream)
 
 ;(import (rnrs io ports (6))
 ;        (srfi :41 streams))
-(import (only (srfi 1) remove)
+(import scheme
+        (chicken base)
+        (only (srfi 1) remove)
         (rename (chicken io) (read-line get-line))
         (srfi 41)
         (only (srfi 152) string-split))
@@ -41,5 +43,12 @@
    (stream-break-on
     stream-null?
     (stream-map words lns))))
+
+(define (port->paragraph-stream port)
+  (unless (input-port? port)
+    (error 'port->paragraph-stream
+           "argument is not an input port"
+           port))
+  (paragraphs (line-stream port)))
 
 )
