@@ -38,13 +38,6 @@
                  (values ins (stream-cons x outs))))))))
     (split st)))
 
-(define test-text
-  (let ((s #<<END
-Once more. Say you are in the country; in some high land of lakes.
-END
-        ))
-    (string-split (string-translate s "\n" " ") " ")))
-
 (define-record-type line
   (make-line words-rev width)
   line?
@@ -150,15 +143,5 @@ END
 
 (define (optimum-fit fills)
   (minimum-by node-demerits fills))
-
-(define (rejoin lines)
-  (string-join (map (cut string-join-reverse <> " ")
-                    (reverse lines))
-               "\n" 'suffix))
-
-;; To improve.
-(define (string-join-reverse ss delim)
-  (string-concatenate-reverse
-   (intersperse ss delim)))
 
 )
