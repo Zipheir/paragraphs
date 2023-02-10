@@ -1,3 +1,5 @@
+(module fill (node-lines solutions-bounded optimum-fit)
+
 (import (chicken string)
         (srfi 1)
         (srfi 41)
@@ -155,3 +157,5 @@ END
 (define (string-join-reverse ss delim)
   (string-concatenate-reverse
    (intersperse ss delim)))
+
+)

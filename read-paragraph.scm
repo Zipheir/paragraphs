@@ -1,3 +1,5 @@
+(module io-stream (line-stream paragraphs)
+
 ;(import (rnrs io ports (6))
 ;        (srfi :41 streams))
 (import (only (srfi 1) remove)
@@ -39,3 +41,5 @@
    (stream-break-on
     stream-null?
     (stream-map words lns))))
+
+)
