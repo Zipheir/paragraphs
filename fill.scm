@@ -19,7 +19,19 @@
                  p)))
          (cons (car lis) (proc (car lis)))
          (cdr lis))))
-              
+
+(define (stream-partition pred st)
+  (letrec
+   ((split
+     (lambda (st)
+       (if (stream-null? st)
+           (values stream-null stream-null)
+           (let-values (((x) (stream-car st))
+                        ((ins outs) (split (stream-cdr st))))
+             (if (pred x)
+                 (values (stream-cons x ins) outs)
+                 (values ins (stream-cons x outs))))))))
+    (split st)))
 
 (define test-text
   (let ((s #<<END
@@ -116,20 +128,20 @@ END
 (define (node-active? nd) (pair? (node-rest nd)))
 
 (define (prune act)
-  (let-values (((act* inact) (partition node-active? act)))
-    (values act* inact)))
+  (stream-partition node-active? act))
 
 ;; Test driver.
 (define (solutions-bounded text max-iters threshold)
-  (let loop ((active (list (initial-node text)))
-             (inactive '())
+  (let loop ((active (stream (initial-node text)))
+             (inactive stream-null)
              (k max-iters))
-    (print "active: " active)
-    (if (or (null? active) (zero? k))
-        (list active inactive)
-        (let*-values (((ns) (append-map (cut extend threshold <>) active))
+    (if (or (stream-null? active) (zero? k))
+        (values active inactive)
+        (let*-values (((ns)
+                       (stream-concat
+                        (stream-map (cut extend threshold <>) active)))
                       ((as* ins*) (prune ns)))
-          (loop as* (append ins* inactive) (- k 1))))))
+          (loop as* (stream-append ins* inactive) (- k 1))))))
 
 (define (optimum-fit fills)
   (minimum-by node-demerits fills))
