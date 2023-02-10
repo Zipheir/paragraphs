@@ -1,4 +1,4 @@
-(module fill (node-lines solutions-bounded optimum-fit)
+(module fill-paragraphs (node-lines solutions-bounded optimum-fit)
 
 (import scheme
         (chicken base)
