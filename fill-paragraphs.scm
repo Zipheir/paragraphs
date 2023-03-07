@@ -1,4 +1,4 @@
-(module fill-paragraphs (node-lines solutions optimum-fit)
+(module fill-paragraphs (node-lines solutions optimum-fit best-fit)
 
 (import scheme
         (chicken base)
@@ -147,5 +147,9 @@
 
 (define (optimum-fit fills)
   (minimum-by node-demerits fills))
+
+;; Cheap strategy: Just take the first solution.
+(define (best-fit fills)
+  (stream-car fills))
 
 )
