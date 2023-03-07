@@ -1,4 +1,4 @@
-(module fill-paragraphs (node-lines solutions-bounded optimum-fit)
+(module fill-paragraphs (node-lines solutions optimum-fit)
 
 (import scheme
         (chicken base)
@@ -9,7 +9,8 @@
         (prefix (only utf8 string-length) utf8:)
         )
 
-(define goal-width 25)
+(define default-threshold 100)
+(define default-goal-width 70)
 
 ;;; Utility
 
@@ -128,18 +129,21 @@
 (define (prune act)
   (stream-partition node-active? act))
 
-;; Test driver.
-(define (solutions-bounded text max-iters threshold)
-  (let loop ((active (stream (initial-node text)))
-             (inactive stream-null)
-             (k max-iters))
-    (if (or (stream-null? active) (zero? k))
-        inactive
-        (let*-values (((ns)
-                       (stream-concat
-                        (stream-map (cut extend threshold <>) active)))
-                      ((as* ins*) (prune ns)))
-          (loop as* (stream-append ins* inactive) (- k 1))))))
+(define (solutions text . opt)
+  (let-optionals opt ((max-iters #f)
+                      (threshold default-threshold)
+                      (goal-width default-goal-width))
+    (let loop ((active (stream (initial-node text)))
+               (inactive stream-null)
+               (k max-iters))
+      (if (or (stream-null? active) (zero? k))
+          inactive
+          (let*-values (((ns)
+                         (stream-concat
+                          (stream-map (cut extend threshold <>)
+                                      active)))
+                        ((as* ins*) (prune ns)))
+            (loop as* (stream-append ins* inactive) (- k 1))))))
 
 (define (optimum-fit fills)
   (minimum-by node-demerits fills))
