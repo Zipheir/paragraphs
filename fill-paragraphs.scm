@@ -16,15 +16,18 @@
 
 (define (sum ks) (fold + 0 ks))
 
-(define (minimum-by proc lis)
-  (car
-   (fold (lambda (x p)
-           (let ((k (proc x)))
-             (if (< k (cdr p))
-                 (cons x k)
-                 p)))
-         (cons (car lis) (proc (car lis)))
-         (cdr lis))))
+(define (minimum-by proc stream)
+  (let loop ((s (stream-cdr stream))
+             (least (stream-car stream))
+             (l-val (proc (stream-car stream))))
+    (if (stream-null? s)
+        least
+        (let* ((x (stream-car s))
+               (v (proc x))
+               (s* (stream-cdr s)))
+          (if (< v l-val)
+              (loop s* x v)
+              (loop s* least l-val))))))
 
 (define (stream-partition pred st)
   (letrec
@@ -79,14 +82,14 @@
   (define build
     (stream-lambda (top-w top bot)
       (let ((sp (make-split top top-w bot)))
-        (if (null? bot)
+        (if (stream-null? bot)
             (stream sp)
-            (let* ((s (car bot))
+            (let* ((s (stream-car bot))
                    (dw (utf8:string-length s)))
               (stream-cons sp
                            (build (+ top-w dw)
-                                  (cons s top)
-                                  (cdr bot))))))))
+                                  (stream-cons s top)
+                                  (stream-cdr bot))))))))
 
   (build 0 '() ss))
 
