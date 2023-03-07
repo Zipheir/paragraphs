@@ -55,12 +55,12 @@
 (define (initial-node words)
   (make-node '() 0 words))
 
-(define (demerits width)
-  (let ((k (+ 1 (badness width))))
+(define (demerits goal width)
+  (let ((k (+ 1 (badness goal width))))
     (expt k 2)))
 
-(define (badness k)
-  (abs (- k goal-width)))
+(define (badness goal k)
+  (abs (- k goal)))
 
 (define (splits-from nd)
   (splits (node-rest nd)))
@@ -96,7 +96,7 @@
   (+ (split-top-width spl)  ; total width of words in top
      (max 0 (- (length (split-top spl)) 1)))) ; inter-word spaces
 
-(define (extend threshold nd)
+(define (extend threshold goal nd)
   (let ((lines (node-lines nd))
         (demr (node-demerits nd)))
     (letrec*
@@ -113,7 +113,7 @@
             (let ((exts (exts-stream rest))) ; recur
               (if (null? (split-top spl))
                   exts  ; ignore empty lines
-                  (let ((d (demerits (top-full-width spl))))
+                  (let ((d (demerits goal (top-full-width spl))))
                     (if (or (null? (split-bottom spl))
                             (< d threshold))
                         (stream-cons (build-node d spl) exts)
@@ -140,7 +140,7 @@
           inactive
           (let*-values (((ns)
                          (stream-concat
-                          (stream-map (cut extend threshold <>)
+                          (stream-map (cut extend threshold goal-width <>)
                                       active)))
                         ((as* ins*) (prune ns)))
             (loop as* (stream-append ins* inactive) (- k 1))))))
