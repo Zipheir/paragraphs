@@ -143,7 +143,7 @@
                           (stream-map (cut extend threshold goal-width <>)
                                       active)))
                         ((as* ins*) (prune ns)))
-            (loop as* (stream-append ins* inactive) (- k 1))))))
+            (loop as* (stream-append ins* inactive) (- k 1)))))))
 
 (define (optimum-fit fills)
   (minimum-by node-demerits fills))
