@@ -134,7 +134,7 @@
              (inactive stream-null)
              (k max-iters))
     (if (or (stream-null? active) (zero? k))
-        (values active inactive)
+        inactive
         (let*-values (((ns)
                        (stream-concat
                         (stream-map (cut extend threshold <>) active)))
