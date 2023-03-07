@@ -121,9 +121,6 @@
 
       (exts-stream (splits-from nd)))))
 
-(define (good-enough? threshold width)
-  (< (demerits width) threshold))
-
 (define (node-active? nd) (pair? (node-rest nd)))
 
 (define (prune act)
