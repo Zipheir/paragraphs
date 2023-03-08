@@ -91,7 +91,7 @@
                                   (stream-cons s top)
                                   (stream-cdr bot))))))))
 
-  (build 0 '() ss))
+  (build 0 stream-null ss))
 
 ;; Compute the total width of the head of a split when inter-word
 ;; spaces are added.
