@@ -129,10 +129,10 @@
 (define (prune act)
   (stream-partition node-active? act))
 
-(define (solutions text . opt)
+(define (solutions words . opt)
   (let-optionals opt ((threshold default-threshold)
                       (goal-width default-goal-width))
-    (let loop ((active (stream (initial-node text)))
+    (let loop ((active (stream (initial-node words)))
                (inactive stream-null))
       (if (stream-null? active)
           inactive
