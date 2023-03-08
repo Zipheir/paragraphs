@@ -68,7 +68,7 @@
 (define (splits-from nd)
   (splits (node-rest nd)))
 
-;; Similar to a zipper on string lists, with the total width of the
+;; Similar to a zipper on string streams, with the total width of the
 ;; "top" segment stored instead of a focus.
 (define-record-type split
   (make-split top top-width bottom)
@@ -114,10 +114,10 @@
            (() stream-null)
            ((spl . rest)
             (let ((exts (exts-stream rest))) ; recur
-              (if (null? (split-top spl))
+              (if (stream-null? (split-top spl))
                   exts  ; ignore empty lines
                   (let ((d (demerits goal (top-full-width spl))))
-                    (if (or (null? (split-bottom spl))
+                    (if (or (stream-null? (split-bottom spl))
                             (< d threshold))
                         (stream-cons (build-node d spl) exts)
                         exts)))))))))
