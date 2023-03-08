@@ -73,19 +73,20 @@
 
 ;; (stream string) -> (stream split)
 (define (splits ss)
-  (define build
-    (stream-lambda (top-w top bot)
-      (let ((sp (make-split top top-w bot)))
-        (if (stream-null? bot)
-            (stream sp)
-            (let* ((s (stream-car bot))
-                   (dw (utf8:string-length s)))
-              (stream-cons sp
-                           (build (+ top-w dw)
-                                  (stream-cons s top)
-                                  (stream-cdr bot))))))))
+  (letrec
+   ((build
+     (stream-lambda (top-w top bot)
+       (let ((sp (make-split top top-w bot)))
+         (if (stream-null? bot)
+             (stream sp)
+             (let* ((s (stream-car bot))
+                    (dw (utf8:string-length s)))
+               (stream-cons sp
+                            (build (+ top-w dw)
+                                   (stream-cons s top)
+                                   (stream-cdr bot)))))))))
 
-  (build 0 stream-null ss))
+    (build 0 stream-null ss)))
 
 ;; Compute the total width of the head of a split when inter-word
 ;; spaces are added.
