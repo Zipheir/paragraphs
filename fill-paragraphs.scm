@@ -16,7 +16,7 @@
 
 (define (sum ks) (fold + 0 ks))
 
-(define (minimum-by proc stream)
+(define (stream-minimum-by proc stream)
   (let loop ((s (stream-cdr stream))
              (least (stream-car stream))
              (l-val (proc (stream-car stream))))
@@ -51,12 +51,12 @@
 (define-record-type node
   (make-node lines demerits rest)
   node?
-  (lines    node-lines)    ; list of line structures
+  (lines    node-lines)    ; stream of line structures
   (demerits node-demerits) ; total demerits of incomplete solution
-  (rest     node-rest))    ; list of remaining words
+  (rest     node-rest))    ; stream of remaining words
 
 (define (initial-node words)
-  (make-node '() 0 words))
+  (make-node stream-null 0 words))
 
 (define (demerits goal width)
   (let ((k (+ 1 (badness goal width))))
@@ -77,7 +77,7 @@
   (top-width split-top-width)
   (bottom    split-bottom))
 
-;; (list string) -> (stream split)
+;; (stream string) -> (stream split)
 (define (splits ss)
   (define build
     (stream-lambda (top-w top bot)
@@ -105,7 +105,7 @@
     (letrec*
      ((build-node
        (lambda (d spl)
-         (make-node (cons (split-top spl) lines)
+         (make-node (stream-cons (split-top spl) lines)
                     (+ demr d)
                     (split-bottom spl))))
       (exts-stream
@@ -146,7 +146,7 @@
             (loop as* (stream-append ins* inactive) (- k 1)))))))
 
 (define (optimum-fit fills)
-  (minimum-by node-demerits fills))
+  (stream-minimum-by node-demerits fills))
 
 ;; Cheap strategy: Just take the first solution.
 (define (best-fit fills)
