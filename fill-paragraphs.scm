@@ -119,7 +119,7 @@
 
       (exts-stream (splits-from nd)))))
 
-(define (node-active? nd) (pair? (node-rest nd)))
+(define (node-active? nd) (stream-pair? (node-rest nd)))
 
 (define (prune act)
   (stream-partition node-active? act))
