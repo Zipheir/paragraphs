@@ -42,16 +42,10 @@
                  (values ins (stream-cons x outs))))))))
     (split st)))
 
-(define-record-type line
-  (make-line words-rev width)
-  line?
-  (words-rev line-words-rev)
-  (width line-width))
-
 (define-record-type node
   (make-node lines demerits rest)
   node?
-  (lines    node-lines)    ; stream of line structures
+  (lines    node-lines)    ; (stream (stream string))
   (demerits node-demerits) ; total demerits of incomplete solution
   (rest     node-rest))    ; stream of remaining words
 
