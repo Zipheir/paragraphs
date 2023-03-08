@@ -1,4 +1,4 @@
-(module fill-paragraphs (node-lines solutions optimum-fit best-fit)
+(module fill-paragraphs (fill-best fill-optimal)
 
 (import scheme
         (chicken base)
@@ -124,9 +124,7 @@
 (define (prune act)
   (stream-partition node-active? act))
 
-(define (solutions words . opt)
-  (let-optionals opt ((threshold default-threshold)
-                      (goal-width default-goal-width))
+(define (solution-nodes words threshold goal-width)
     (let loop ((active (stream (initial-node words)))
                (inactive stream-null))
       (if (stream-null? active)
@@ -136,7 +134,30 @@
                           (stream-map (cut extend threshold goal-width <>)
                                       active)))
                         ((as* ins*) (prune ns)))
-            (loop as* (stream-append ins* inactive)))))))
+            (loop as* (stream-append ins* inactive))))))
+
+(define (%solution select words threshold goal-width)
+  (stream-reverse
+   (stream-map
+    stream-reverse
+    (node-lines
+     (select (solution-nodes words threshold goal-width))))))
+
+;; (stream string) -> (stream (stream string))
+;; Main interface (exported). Fills *words* using the "optimal fit"
+;; algorithm.
+(define (fill-optimal words . opt)
+  (let-optionals opt ((threshold default-threshold)
+                      (goal-width default-goal-width))
+    (%solution optimum-fit words threshold goal-width)))
+
+;; (stream string) -> (stream (stream string))
+;; Main interface (exported). Fills *words* using the "best fit"
+;; algorithm.
+(define (fill-best words . opt)
+  (let-optionals opt ((threshold default-threshold)
+                      (goal-width default-goal-width))
+    (%solution best-fit words threshold goal-width)))
 
 (define (optimum-fit fills)
   (stream-minimum-by node-demerits fills))
