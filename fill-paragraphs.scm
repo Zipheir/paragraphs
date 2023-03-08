@@ -97,7 +97,7 @@
 ;; spaces are added.
 (define (top-full-width spl)
   (+ (split-top-width spl)  ; total width of words in top
-     (max 0 (- (length (split-top spl)) 1)))) ; inter-word spaces
+     (max 0 (- (stream-length (split-top spl)) 1)))) ; inter-word spaces
 
 (define (extend threshold goal nd)
   (let ((lines (node-lines nd))
