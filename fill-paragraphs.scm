@@ -130,20 +130,18 @@
   (stream-partition node-active? act))
 
 (define (solutions text . opt)
-  (let-optionals opt ((max-iters #f)
-                      (threshold default-threshold)
+  (let-optionals opt ((threshold default-threshold)
                       (goal-width default-goal-width))
     (let loop ((active (stream (initial-node text)))
-               (inactive stream-null)
-               (k max-iters))
-      (if (or (stream-null? active) (zero? k))
+               (inactive stream-null))
+      (if (stream-null? active)
           inactive
           (let*-values (((ns)
                          (stream-concat
                           (stream-map (cut extend threshold goal-width <>)
                                       active)))
                         ((as* ins*) (prune ns)))
-            (loop as* (stream-append ins* inactive) (- k 1)))))))
+            (loop as* (stream-append ins* inactive)))))))
 
 (define (optimum-fit fills)
   (stream-minimum-by node-demerits fills))
