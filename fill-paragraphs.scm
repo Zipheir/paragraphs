@@ -1,4 +1,4 @@
-(module fill-paragraphs (fill-best fill-optimal)
+(module fill-paragraphs (fill-best fill-optimal format-solution)
 
 (import scheme
         (chicken base)
@@ -41,6 +41,17 @@
                  (values (stream-cons x ins) outs)
                  (values ins (stream-cons x outs))))))))
     (split st)))
+
+(define (string-join-reverse-stream ss-rev sep)
+  (letrec
+   ((join
+     (lambda (acc ss)
+       (if (stream-null? (stream-cdr ss))
+           (string-concatenate (cons (stream-car ss) acc))
+           (join (cons sep (cons (stream-car ss) acc))
+                 (stream-cdr ss))))))
+
+    (join '() ss-rev)))
 
 (define-record-type node
   (make-node lines demerits rest)
@@ -160,10 +171,23 @@
     (%solution best-fit words threshold goal-width)))
 
 (define (optimum-fit fills)
-  (stream-minimum-by node-demerits fills))
+  (format-solution (stream-minimum-by node-demerits fills)))
 
 ;; Cheap strategy: Just take the first solution.
 (define (best-fit fills)
-  (stream-car fills))
+  (format-solution (stream-car fills)))
+
+;;;; Joining up the results
+
+;; format-solution : (stream (stream string)) -> string
+;;
+;; The input stream and each sub-stream are in reverse order.
+(define (format-solution lines-rev)
+  (fold-right
+   (lambda (line para)
+     (string-append (string-join-reverse-stream line " ")
+                    para))
+   ""
+   (stream->list (stream-reverse lines-rev))))
 
 )
