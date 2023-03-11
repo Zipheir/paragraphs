@@ -1,4 +1,4 @@
-(module fill-paragraphs (fill-best fill-optimal format-solution)
+(module fill-paragraphs (fill-best fill-optimal)
 
 (import scheme
         (chicken base)
