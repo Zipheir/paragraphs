@@ -148,13 +148,12 @@
             (loop as* (stream-append ins* inactive))))))
 
 (define (%solution select words threshold goal-width)
-  (stream-reverse
-   (stream-map
-    stream-reverse
-    (node-lines
-     (select (solution-nodes words threshold goal-width))))))
+  (format-solution
+   (node-lines
+    (select
+     (solution-nodes words threshold goal-width)))))
 
-;; (stream string) -> (stream (stream string))
+;; (stream string) -> string
 ;; Main interface (exported). Fills *words* using the "optimal fit"
 ;; algorithm.
 (define (fill-optimal words . opt)
@@ -162,7 +161,7 @@
                       (goal-width default-goal-width))
     (%solution optimum-fit words threshold goal-width)))
 
-;; (stream string) -> (stream (stream string))
+;; (stream string) -> string
 ;; Main interface (exported). Fills *words* using the "best fit"
 ;; algorithm.
 (define (fill-best words . opt)
@@ -171,11 +170,11 @@
     (%solution best-fit words threshold goal-width)))
 
 (define (optimum-fit fills)
-  (format-solution (stream-minimum-by node-demerits fills)))
+  (stream-minimum-by node-demerits fills))
 
 ;; Cheap strategy: Just take the first solution.
 (define (best-fit fills)
-  (format-solution (stream-car fills)))
+  (stream-car fills))
 
 ;;;; Joining up the results
 
