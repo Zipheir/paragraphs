@@ -185,6 +185,7 @@
   (fold-right
    (lambda (line para)
      (string-append (string-join-reverse-stream line " ")
+                    "\n"
                     para))
    ""
    (stream->list (stream-reverse lines-rev))))
