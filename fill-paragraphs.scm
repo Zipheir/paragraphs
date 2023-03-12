@@ -9,7 +9,7 @@
         (prefix (only utf8 string-length) utf8:)
         )
 
-(define default-threshold 100)
+(define default-threshold 65)
 (define default-goal-width 70)
 
 ;;; Utility
